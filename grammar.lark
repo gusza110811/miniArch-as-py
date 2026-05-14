@@ -1,0 +1,120 @@
+start: statement+
+
+?statement: constantdef
+    | directive
+    | labeldef
+    | scope
+    | directive
+    | code_block
+    | labeldef
+    | instruction
+    | _NEWLINE
+
+code_block: IDENTIFIER scope
+
+scope: "{" statement* "}"
+
+constantdef: IDENTIFIER "=" expr
+labeldef: IDENTIFIER ":"
+
+?directive: ".ascii" STRING -> text
+    | ".asciiz" STRING -> text_nulterm
+    | ".bytes" expr* -> bytes
+    | ".byte" [expr] -> byte
+    | ".word" [expr] -> word
+    | ".double" [expr] -> double
+    | ".quad" [expr] -> quad
+    | ".zero" [expr] -> zero
+    | ".org" expr -> org
+    | ".offset" expr -> offset
+    | "export" (constantdef|labeldef|code_block) -> exportdef
+    | "export" IDENTIFIER ["->" IDENTIFIER] -> export
+
+?expr: bitwise_or
+
+?bitwise_or: bitwise_xor
+    | bitwise_or "|" bitwise_xor -> or_op
+
+?bitwise_xor: bitwise_and
+    | bitwise_xor "^" bitwise_and -> xor_op
+
+?bitwise_and: shift
+    | bitwise_and "&" shift -> and_op
+
+?shift: sum
+    | shift ">>" sum -> shiftr
+    | shift "<<" sum -> shiftl
+
+?sum: term
+    | sum "+" term -> add
+    | sum "-" term -> sub
+
+?term: unary
+    | term "*" unary -> mul
+    | term "/" unary -> div
+    | term "%" unary -> mod
+
+?unary: factor
+    | "~" unary -> not_op
+    | "-" unary -> unary_sub
+
+?factor: "(" expr ")"
+    | literal
+    | symbol
+
+literal: DECIMAL
+    | OCTAL
+    | HEX
+    | BINARY
+    | CHAR
+
+
+instruction: IDENTIFIER (parameter ("," parameter)?)?
+
+?parameter: register
+    | immediate
+    | address
+
+immediate: expr
+?address: "[" [IDENTIFIER] [SEGMENT ":"] BASE [SIGN expr] "]" -> indirect_addr
+    | "[" [IDENTIFIER] [SEGMENT ":"] expr "]" -> direct_addr
+
+register: REGISTER
+
+symbol: IDENTIFIER
+
+// terminals
+COMMENT: ";" /[^\n]*/
+
+REGISTER.2: REGISTER_INNER /(?![a-zA-Z_])/
+
+REGISTER_INNER: "ax"i | "bx"i | "cx"i | "dx"i
+    | "cs"i | "ds"i | "ss"i | "es"i
+    | "sp"i | "bp"i
+    | "ah"i | "bh"i | "ch"i | "dh"i
+
+SEGMENT.3: "cs"i | "ds"i | "ss"i | "es"i
+BASE.3: "bx"i | "bp"i
+
+SIGN: "+"|"-"
+
+HEX: /0x[0-9a-fA-F_]+/
+OCTAL: /0o[0-7_]+/
+BINARY: /0b[01_]+/
+DECIMAL: /[0-9_]+/
+STRING: ESCAPED_STRING
+IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/
+
+CHAR: "'" /.*/ "'"
+
+%import common.ESCAPED_STRING
+%import common.WS
+%import common.WS_INLINE
+%import common.NEWLINE
+
+_NEWLINE: NEWLINE
+_WS: WS
+
+%ignore WS_INLINE
+//%ignore NEWLINE
+%ignore COMMENT
