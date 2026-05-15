@@ -157,7 +157,26 @@ class Mov(Instruction):
                 return Err("unsupported operand",1,"cannot store immediate value directly to memory")
         elif destT == IndirectDereference:
             if srcT == Register:
-                base = dest.value
+                base = dest.base
+                segment = dest.segment
+                offset:int = dest.offset
+                if length == 0:
+                    out.append(0x18)
+                else:
+                    out.append(0x11)
+                target = src.value
+                if base == 0 and offset == 0:
+                    offset = None
+                if not offset is None:
+                    descriptor = ((segment + 8 + (4 * base)) << 4) | target
+                    out.append(descriptor)
+                    out.extend(offset.to_bytes(2,'little',signed=True))
+                else:
+                    descriptor = (segment << 4) | target
+                    out.append(descriptor)
+
+                """segment = dest.segment
+                base = dest.base
                 offset:int = dest.offset
                 if length == 0:
                     out.append(0x18)
@@ -165,12 +184,12 @@ class Mov(Instruction):
                     out.append(0x1A)
                 source = src.value
                 if offset:
-                    descriptor = ((base+8) << 4) | source
+                    descriptor = ((segment+8) << 4) | source
                     out.append(descriptor)
                     out.extend(offset.to_bytes(2,'little',signed=True))
                 else:
-                    descriptor = (base << 4) | source
-                    out.append(descriptor)
+                    descriptor = (segment << 4) | source
+                    out.append(descriptor)"""
             elif srcT == Dereference or srcT == IndirectDereference:
                 return Err("unsupported operand",1,"cannot copy directly from memory to memory")
             elif srcT == Immediate:
