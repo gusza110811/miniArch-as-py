@@ -6,10 +6,11 @@ from parser import Transformer
 class Constructor:
     def __init__(self):
         self.globals = Context()
+        self.contexts = [self.globals]
 
     def main(self,ast:Transformer.start,filename="<main>") -> bytes:
 
-        contexts = ast.eval(self.globals)
+        self.contexts.extend(ast.eval(self.globals))
 
         ast.collect(self.globals)
         #print([context.data for context in contexts])

@@ -81,6 +81,7 @@ if __name__ == "__main__":
     argparser.add_argument("source",help="source assembly")
     argparser.add_argument("--output","-o",nargs="?",help="output file",default=None)
     argparser.add_argument("--linkable","-l",help="generate linkable object file instead of executable binary",action="store_true")
+    argparser.add_argument("--symbols","-s",help="show all symbols in source assembly",action="store_true")
 
     args = argparser.parse_args()
 
@@ -97,6 +98,11 @@ if __name__ == "__main__":
 
     assembler = Assembler(args.linkable)
     out = assembler.main(code,source)
+    if args.symbols:
+        print("gr.id: name            = value    hex  unicode\n")
+        for idx, context in enumerate(assembler.constructor.contexts):
+            for idxj, (symbol, value) in enumerate(context.data.items()):
+                print(f"{idx:02}.{idxj:02}: {symbol:<15} = {value:5}  {value:5X}  {chr(value)}")
     if not out is None:
         with open(dest,"wb") as file:
             file.write(out)
