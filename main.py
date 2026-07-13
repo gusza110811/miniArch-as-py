@@ -102,7 +102,7 @@ if __name__ == "__main__":
         print("gr.id: name            = value    hex  unicode\n")
         for idx, context in enumerate(assembler.constructor.contexts):
             for idxj, (symbol, value) in enumerate(context.data.items()):
-                print(f"{idx:02}.{idxj:02}: {symbol:<15} = {value:5}  {value:5X}  {chr(value)}")
+                print(f"{idx:02}.{idxj:02}: {symbol:<15} = {value:5}  {value:5X}  {ascii(chr(value))}")
     if not out is None:
         with open(dest,"wb") as file:
             file.write(out)
