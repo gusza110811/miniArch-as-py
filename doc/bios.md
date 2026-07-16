@@ -30,17 +30,14 @@
 #### Read Sector
 - `DX` = 1
 - `BX` <- start of 512 bytes buffer to store data read from sector
-- `AX` -> status (0 = success)
+- `CX:AX` <- 32 bit sector
+- `CX:AX` -> next sector
 
 #### Write Sector
 - `DX` = 2
 - `BX` <- start of 512 bytes data to write into sector
-- `AX` -> status (0 = success)
-
-#### Set Sector
-- `DX` = 4
-- `AX` <- lower 16 bit of sector
-- `CX` <- upper 16 bit of sector
+- `CX:AX` <- 32 bit sector
+- `CX:AX` -> next sector
 
 ### Serial Console Service
 - interrupt id `0x14`
