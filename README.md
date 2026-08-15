@@ -1,6 +1,6 @@
-# MiniArch-AS-py
+# gAsm
 
-A Python-based assembler for the MiniArch 16-bit CPU architecture. This assembler translates MiniArch assembly language (`.asm` files) into executable binary code (`.bin` files) that can be run on the MiniArch emulator.
+A Python-based retargetable assembler, designed for the MiniArch architecture, but easily adaptable to other architectures.
 
 ## Features
 
@@ -27,15 +27,6 @@ Every example down assume you aliased the assembler with option `--target ma` to
 ```bash
 ma-as <input_file.asm> [output_file.bin]
 ```
-
-Make symlink of the assembler to anywhere on your path as `ma-as`
-
-For example, at `~/.local/bin`:
-```bash
-ln -s ~/path/to/repo/main.py ~/.local/bin/ma-as
-```
-replace `~/path/to/repo/main.py` with the absolute path to main.py
-
 
 ### Command Line Options
 
