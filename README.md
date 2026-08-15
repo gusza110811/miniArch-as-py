@@ -20,6 +20,8 @@ Ensure you have Python 3.6+ installed. The assembler uses the Lark parsing libra
 pip install lark
 ```
 
+Every example down assume you aliased the assembler with option `--target ma` to `ma-as` as described in the Usage section below.
+
 ## Usage
 
 ```bash

@@ -3,6 +3,7 @@ import parser, constructor, color
 import os, sys
 import argparse
 import lark.exceptions
+import instruction_base as instruction
 
 if os.path.islink(__file__):
     link = os.path.dirname(os.readlink(__file__))
@@ -14,9 +15,9 @@ else:
     __dir__ = os.path.dirname(__file__)
 
 class Assembler:
-    def __init__(self,linkable=False):
+    def __init__(self, target:instruction, linkable=False):
         self.linkable = linkable
-        self.parser = parser.Parser(linkable)
+        self.parser = parser.Parser(target,linkable)
         self.constructor = constructor.Constructor()
 
     def main(self, code:str, filename="<main>"):
@@ -67,14 +68,6 @@ class Assembler:
         print("\n")
         return out
 
-def test():
-    test = open("main.asm").read()
-
-    assembler = Assembler()
-    out = assembler.main(test)
-    with open("main.bin","wb") as file:
-        file.write(out)
-
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
 
@@ -82,11 +75,21 @@ if __name__ == "__main__":
     argparser.add_argument("--output","-o",nargs="?",help="output file",default=None)
     argparser.add_argument("--linkable","-l",help="generate linkable object file instead of executable binary",action="store_true")
     argparser.add_argument("--symbols","-s",help="show all symbols in source assembly",action="store_true")
+    argparser.add_argument("--target","-t",help="target architecture")
 
     args = argparser.parse_args()
 
     source:str = args.source
     dest = args.output
+    target = args.target
+
+    target_mod = None
+    if target is None:
+        sys.exit("no target specified, use --target <target> to specify a target architecture")
+    elif target == "ma":
+        import targets.instruction_ma as target_mod
+    else:
+        sys.exit(f"unknown target '{target}'")
 
     if dest is None:
         dest = ".".join(source.split(".")[:-1]) + ".bin"
@@ -96,7 +99,7 @@ if __name__ == "__main__":
 
     code = open(source).read()
 
-    assembler = Assembler(args.linkable)
+    assembler = Assembler(target_mod, args.linkable)
     out = assembler.main(code,source)
     if args.symbols:
         print("gr.id: name            = value    hex  unicode\n")

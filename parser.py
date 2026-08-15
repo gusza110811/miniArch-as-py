@@ -6,7 +6,8 @@ import os, sys
 import typing
 from context import Context
 import parameter
-import instruction
+import instruction_base as instruction
+import targets.instruction_ma as instruction_default
 from dataclasses import dataclass
 
 @dataclass
@@ -20,9 +21,11 @@ class ParseErr(Exception):
 __dir__ = os.path.dirname(__file__)
 
 class Transformer(t):
-    def __init__(self, visit_tokens = True, allow_link=False):
+    def __init__(self, target:instruction, visit_tokens = True, allow_link=False):
         super().__init__(visit_tokens)
         self.allow_link = allow_link
+        self.target = target
+        self.codegen.target = target
 
     class Node:
         def __init__(self, value):pass
@@ -111,6 +114,7 @@ class Transformer(t):
         return super().transform(tree)
     
     class codegen(Branch):
+        target:instruction
         def __init__(self, value):
             super().__init__(value)
             if self.children:
@@ -188,8 +192,8 @@ class Transformer(t):
 
             for child in self.args:
                 processed_args.append(child.eval(context))
-            self.out = instruction.Instruction.from_str(self.commandname, processed_args).get(self.position)
-            if isinstance(self.out, instruction.Err):
+            self.out = self.target.Instruction.from_str(self.commandname, processed_args).get(self.position)
+            if isinstance(self.out, self.target.Err):
                 if self.out.pos == -1:
                     err_begin = self.command.get_first_token()
                     err_end = self.command.get_last_token()
@@ -635,13 +639,13 @@ class Transformer(t):
 
 
 class Parser:
-    def __init__(self,linkable=False):
+    def __init__(self, target:instruction, linkable=False):
         self.grammar = open(os.path.join(__dir__,"grammar.lark")).read()
         self.parser = Lark(
             self.grammar,
             parser="lalr",
         )
-        self.transformer = Transformer(allow_link=linkable)
+        self.transformer = Transformer(target=target, allow_link=linkable)
     def parse(self, code:str, filename="<main>"):
         transformer = self.transformer
         parser = self.parser
