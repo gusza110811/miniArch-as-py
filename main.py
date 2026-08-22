@@ -83,10 +83,22 @@ if __name__ == "__main__":
     dest = args.output
     target = args.target
 
+    command = os.path.basename(sys.argv[0])
+
     target_mod = None
     if target is None:
-        sys.exit("no target specified, use --target <target> to specify a target architecture")
-    elif target == "ma":
+        # guess target from command name
+        if command.startswith("as-"):
+            target = command[3:]
+        elif command.startswith("asm-"):
+            target = command[4:]
+        elif command.endswith("-as"):
+            target = command[:-3]
+        elif command.endswith("-asm"):
+            target = command[:-4]
+        else:
+            sys.exit("no target specified, use --target <target> to specify a target architecture")
+    if target == "ma":
         import targets.instruction_ma as target_mod
     else:
         sys.exit(f"unknown target '{target}'")
